@@ -80,7 +80,7 @@ jobs:
             azureSubscription: 'AzureSubscription1(77bb7fc0-c407-40c1-9485-4c895c8ca6b6)'
             appType: 'webApp'
             appName: 'azuredevops-web-app'
-            package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
+            package: '$(System.DefaultWorkingDirectory)/**/*.zip'
             deploymentMethod: 'auto'
 
 - deployment: DeployToUAT
@@ -98,5 +98,5 @@ jobs:
             azureSubscription: 'AzureSubscription1(77bb7fc0-c407-40c1-9485-4c895c8ca6b6)'
             appType: 'webApp'
             appName: 'azuredevops-web-app'
-            package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
+            package: '$(System.DefaultWorkingDirectory)/**/*.zip'
             deploymentMethod: 'auto'
