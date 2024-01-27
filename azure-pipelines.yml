@@ -65,12 +65,12 @@ jobs:
       ArtifactName: 'AzureTestProject'
       publishLocation: 'Container'
 
-- job: DeployToStaging
+- deployment: DeployToStaging
   displayName: 'Deploy to Staging'
   dependsOn: Build
-  environment: 'Staging'
   pool:
     vmImage: 'windows-latest'
+  environment: 'Staging'
   strategy:
     runOnce:
       deploy:
@@ -83,12 +83,12 @@ jobs:
             package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
             deploymentMethod: 'auto'
 
-- job: DeployToUAT
+- deployment: DeployToUAT
   displayName: 'Deploy to UAT'
   dependsOn: Build
-  environment: 'UAT'
   pool:
     vmImage: 'windows-latest'
+  environment: UAT
   strategy:
     runOnce:
       deploy:
