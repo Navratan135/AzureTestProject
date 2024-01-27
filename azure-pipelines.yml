@@ -67,7 +67,7 @@ steps:
     azureSubscription: 'AzureSubscription1(77bb7fc0-c407-40c1-9485-4c895c8ca6b6)'
     appType: 'webApp'
     appName: 'azuredevops-web-app'
-    package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+    package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
     deploymentMethod: 'auto'
 
 # stages:
