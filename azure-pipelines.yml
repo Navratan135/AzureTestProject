@@ -15,88 +15,96 @@ variables:
   solution: '**/RoundTheCode.AzureTestProject.sln'
   project: '**/RoundTheCode.AzureTestProject.csproj'
 
-jobs:
-- job: Build
-  displayName: 'Build and Publish Artifact'
-  steps:
-  - task: NuGetToolInstaller@1
-    name: 'NuGetToolInstaller'
-    displayName: 'NuGet tool installer'
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    displayName: 'Build and Publish Artifact'
+    steps:
+    - task: NuGetToolInstaller@1
+      name: 'NuGetToolInstaller'
+      displayName: 'NuGet tool installer'
 
-  - task: NuGetCommand@2
-    name: 'NuGetRestore'
-    displayName: 'NuGet restore packages'
-    inputs:
-      command: 'restore'
-      restoreSolution: '$(solution)'
-      feedsToUse: 'select'
+    - task: NuGetCommand@2
+      name: 'NuGetRestore'
+      displayName: 'NuGet restore packages'
+      inputs:
+        command: 'restore'
+        restoreSolution: '$(solution)'
+        feedsToUse: 'select'
 
-  - task: DotNetCoreCLI@2
-    name: 'Build'
-    displayName: 'Build'
-    inputs:
-      command: build
-      projects: '$(project)'
-      arguments: '--configuration $(BuildConfiguration)'
+    - task: DotNetCoreCLI@2
+      name: 'Build'
+      displayName: 'Build'
+      inputs:
+        command: build
+        projects: '$(project)'
+        arguments: '--configuration $(BuildConfiguration)'
 
-  - task: DotNetCoreCLI@2
-    name: 'Tests'
-    displayName: 'Run tests'
-    inputs:
-      command: 'test'
-      projects: '$(solution)'
-      arguments: '--configuration $(BuildConfiguration)'
+    - task: DotNetCoreCLI@2
+      name: 'Tests'
+      displayName: 'Run tests'
+      inputs:
+        command: 'test'
+        projects: '$(solution)'
+        arguments: '--configuration $(BuildConfiguration)'
 
-  - task: DotNetCoreCLI@2
-    name: 'Publish'
-    displayName: 'Publish'
-    inputs:
-      command: 'publish'
-      publishWebProjects: True
-      projects: '$(project)'
-      arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
-      zipAfterPublish: True
+    - task: DotNetCoreCLI@2
+      name: 'Publish'
+      displayName: 'Publish'
+      inputs:
+        command: 'publish'
+        publishWebProjects: True
+        projects: '$(project)'
+        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+        zipAfterPublish: True
 
-  - task: PublishBuildArtifacts@1
-    name: 'PublishBuildArtifacts'
-    displayName: 'Publish build artifacts'
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      ArtifactName: 'AzureTestProject'
-      publishLocation: 'Container'
+    - task: PublishBuildArtifacts@1
+      name: 'PublishBuildArtifacts'
+      displayName: 'Publish build artifacts'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'AzureTestProject'
+        publishLocation: 'Container'
 
-- deployment: DeployToStaging
-  displayName: 'Deploy to Staging'
-  dependsOn: Build
-  pool:
-    vmImage: 'windows-latest'
-  environment: 'Staging'
-  strategy:
-    runOnce:
-      deploy:
-        steps:
-        - task: AzureWebApp@1
-          inputs:
-            azureSubscription: 'AzureSubscription1(77bb7fc0-c407-40c1-9485-4c895c8ca6b6)'
-            appType: 'webApp'
-            appName: 'azuredevops-web-app'
-            package: '$(System.DefaultWorkingDirectory)/**/*.zip'
-            deploymentMethod: 'auto'
+- stage: DeployToStaging
+  dependsOn:
+    - Build
+  jobs:
+  - deployment: DeployToStaging
+    displayName: 'Deploy to Staging'
+    pool:
+      vmImage: 'windows-latest'
+    environment: 'Staging'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureWebApp@1
+            inputs:
+              azureSubscription: 'AzureSubscription1(77bb7fc0-c407-40c1-9485-4c895c8ca6b6)'
+              appType: 'webApp'
+              appName: 'azuredevops-web-app'
+              package: '$(Pipeline.Workspace)/AzureTestProject/*.zip'
+              deploymentMethod: 'auto' 
 
-- deployment: DeployToUAT
-  displayName: 'Deploy to UAT'
-  dependsOn: Build
-  pool:
-    vmImage: 'windows-latest'
-  environment: UAT
-  strategy:
-    runOnce:
-      deploy:
-        steps:
-        - task: AzureWebApp@1
-          inputs:
-            azureSubscription: 'AzureSubscription1(77bb7fc0-c407-40c1-9485-4c895c8ca6b6)'
-            appType: 'webApp'
-            appName: 'azuredevops-web-app'
-            package: '$(System.DefaultWorkingDirectory)/**/*.zip'
-            deploymentMethod: 'auto'
+- stage: DeployToUAT
+  dependsOn:
+    - Build
+  jobs:
+  - deployment: DeployToUAT
+    displayName: 'Deploy to UAT'
+    pool:
+      vmImage: 'windows-latest'
+    environment: UAT
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureWebApp@1
+            inputs:
+              azureSubscription: 'AzureSubscription1(77bb7fc0-c407-40c1-9485-4c895c8ca6b6)'
+              appType: 'webApp'
+              appName: 'azuredevops-web-app'
+              package: '$(Pipeline.Workspace)/AzureTestProject/*.zip'
+              deploymentMethod: 'auto'
